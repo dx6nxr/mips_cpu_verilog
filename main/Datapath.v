@@ -115,7 +115,17 @@ module ArithmeticLogicUnit(
 	output [31:0] result,
 	output        zero
 );
+	reg [31:0] RES;
 
-	// TODO Implementation of the ALU
-
+	assign zero = (RES == 0);
+	assign result = RES;
+	always @(*)
+	case (alucontrol)
+		3'b000: RES = a & b;
+		3'b001: RES = a | b;
+		3'b010: RES = a + b;
+		3'b110: RES = a - b;
+		3'b111: RES = a < b ? 1 : 0;
+		default: RES = 0;
+	endcase
 endmodule

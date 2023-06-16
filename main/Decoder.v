@@ -27,12 +27,12 @@ module Decoder(
 					memtoreg = 0;
 					dojump = 0;
 					case (funct)
-						6'b100001: alucontrol = // TODO // addition unsigned
-						6'b100011: alucontrol = // TODO // subtraction unsigned
-						6'b100100: alucontrol = // TODO // and
-						6'b100101: alucontrol = // TODO // or
-						6'b101011: alucontrol = // TODO // set-less-than unsigned
-						default:   alucontrol = // TODO // undefined
+						6'b100001: alucontrol = 3'b010; // TODO // addition unsigned
+						6'b100011: alucontrol = 3'b110;// TODO // subtraction unsigned
+						6'b100100: alucontrol = 3'b000;// TODO // and
+						6'b100101: alucontrol = 3'b001;// TODO // or
+						6'b101011: alucontrol = 3'b111;// TODO // set-less-than unsigned
+						default:   alucontrol = 3'b100;// TODO // undefined
 					endcase
 				end
 			6'b100011, // Load data word from memory
