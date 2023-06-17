@@ -125,6 +125,8 @@ module ArithmeticLogicUnit(
 		3'b001: RES = a | b;
 		3'b010: RES = a + b;
 		3'b110: RES = a - b;
+		3'b100: RES = {b, 16'b0}; // lui
+		3'b011: RES = a | b; //ori
 		3'b111: RES = a < b ? 1 : 0;
 		default: RES = 0;
 	endcase

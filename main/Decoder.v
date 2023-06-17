@@ -32,7 +32,7 @@ module Decoder(
 						6'b100100: alucontrol = 3'b000; // and
 						6'b100101: alucontrol = 3'b001; // or
 						6'b101011: alucontrol = 3'b111; // set-less-than unsigned
-						default:   alucontrol = 3'b100; // undefined
+						default:   alucontrol = 3'b101; // undefined
 					endcase
 				end
 			6'b100011, // Load data word from memory
@@ -73,36 +73,34 @@ module Decoder(
 				begin
 					regwrite = 0;
 					destreg = 5'bx;
-					alusrcbimm = 0;
+					alusrcbimm = 1;
 					dobranch = 0;
 					memwrite = 0;
 					memtoreg = 0;
 					dojump = 1;
-					alucontrol = // TODO
+					alucontrol = 3'b101; //default (undefined) behavior of ALU
 				end
-				//ori 001101
-			6'b001101:
+			6'b001101: //ori 001101
 				begin
 					regwrite = 1;
 					destreg = instr[20:16];
-					alusrcbimm = 0;
+					alusrcbimm = 1;
 					dobranch = 0;
 					memwrite = 0;
 					memtoreg = 0;
 					dojump = 0;
-					alucontrol = // TODO
+					alucontrol = 3'b011;
 				end
-				//lui 001111
-			6'b001111:
+			6'b001111: //lui 001111
 				begin
 					regwrite = 1;
 					destreg = instr[20:16];
-					alusrcbimm = 0;
+					alusrcbimm = 1;
 					dobranch = 0;
 					memwrite = 0;
 					memtoreg = 0;
 					dojump = 0;
-					alucontrol = // TODO
+					alucontrol = 3'b100;
 				end
 			default: // Default case
 				begin
@@ -113,7 +111,7 @@ module Decoder(
 					memwrite = 1'bx;
 					memtoreg = 1'bx;
 					dojump = 1'bx;
-					alucontrol = // TODO
+					alucontrol = 3'b101; //default (undefined) behavior of ALU
 				end
 		endcase
 	end
