@@ -9,9 +9,10 @@ module MIPScore(
 	output [31:0] aluout, writedata,
 	input  [31:0] readdata
 );
-	wire       memtoreg, alusrcbimm, regwrite, dojump, dobranch, zero;
+	wire       memtoreg, alusrcbimm, dojump, dobranch, zero;
+	wire [1:0] regwrite;
 	wire [4:0] destreg;
-	wire [2:0] alucontrol;
+	wire [3:0] alucontrol;
 
 	Decoder decoder(instr, zero, memtoreg, memwrite,
 					dobranch, alusrcbimm, destreg,

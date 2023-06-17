@@ -24,16 +24,16 @@ module ProcessorTestbench();
 			// Read program to be executed
 //			$readmemh("TestPrograms/Fibonacci.dat", proc.imem.INSTRROM, 0, 5);
 //			$readmemh("TestPrograms/Fibonacci.expected", expectedRegContent);
-//			$readmemh("TestPrograms/FunctionCall.dat", proc.imem.INSTRROM, 0, 4);
-//			$readmemh("TestPrograms/FunctionCall.expected", expectedRegContent);
+			$readmemh("main/TestPrograms/FunctionCall.dat", proc.imem.INSTRROM, 0, 4);
+			$readmemh("main/TestPrograms/FunctionCall.expected", expectedRegContent);
 //			$readmemh("main/TestPrograms/Constants.dat", proc.imem.INSTRROM, 0, 2);
 //			$readmemh("main/TestPrograms/Constants.expected", expectedRegContent);
 //			$readmemh("TestPrograms/Multiplication.dat", proc.imem.INSTRROM, 0, 4);
 //			$readmemh("TestPrograms/Multiplication.expected", expectedRegContent);
 //			$readmemh("main/TestPrograms/BranchTest.dat", proc.imem.INSTRROM, 0, 6);
 //			$readmemh("main/TestPrograms/BranchTest.expected", expectedRegContent);
-			$readmemh("main/TestPrograms/Mult.dat", proc.imem.INSTRROM, 0, 4);
-			$readmemh("main/TestPrograms/Mult.expected", expectedRegContent);
+//			$readmemh("main/TestPrograms/Mult.dat", proc.imem.INSTRROM, 0, 4);
+//			$readmemh("main/TestPrograms/Mult.expected", expectedRegContent);
 
 			// Generate reset input
 			reset <= 1;
