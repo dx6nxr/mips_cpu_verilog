@@ -116,6 +116,7 @@ module ArithmeticLogicUnit(
 	output        zero
 );
 	reg [31:0] RES;
+	reg [63:0] hilo;
 
 	assign zero = (RES == 0);
 	assign result = RES;
@@ -126,8 +127,10 @@ module ArithmeticLogicUnit(
 		3'b010: RES = a + b;
 		3'b110: RES = a - b;
 		3'b100: RES = {b, 16'b0}; // lui
-		3'b011: RES = a | b; //ori
 		3'b111: RES = a < b ? 1 : 0;
+		3'b100: RES = hilo[63:32]; //mfhi
+		3'b101: RES = hilo[31:0]; //mflo
+		3'b011: hilo = a * b; // mulu
 		default: RES = 0;
 	endcase
 endmodule

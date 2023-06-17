@@ -1,0 +1,8 @@
+lui $1, 0xffff
+ori $1, 0xff9c
+bltz $1, labl
+lui $2, 0x0000
+ori $2, 0x0001
+labl:
+lui $3, 0x0000
+ori $3, 0xffff

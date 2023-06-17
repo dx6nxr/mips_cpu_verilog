@@ -32,6 +32,9 @@ module Decoder(
 						6'b100100: alucontrol = 3'b000; // and
 						6'b100101: alucontrol = 3'b001; // or
 						6'b101011: alucontrol = 3'b111; // set-less-than unsigned
+						6'b010000: alucontrol = 3'b100; // mfhi
+						6'b010010: alucontrol = 3'b101; // mflo
+						6'b011001: alucontrol = 3'b011; // mult
 						default:   alucontrol = 3'b101; // undefined
 					endcase
 				end
@@ -89,7 +92,7 @@ module Decoder(
 					memwrite = 0;
 					memtoreg = 0;
 					dojump = 0;
-					alucontrol = 3'b011;
+					alucontrol = 3'b001;
 				end
 			6'b001111: //lui 001111
 				begin
@@ -101,6 +104,18 @@ module Decoder(
 					memtoreg = 0;
 					dojump = 0;
 					alucontrol = 3'b100;
+				end
+				//implement the bltz instruction with the opcode 000001
+			6'b000001: //bltz 000001
+				begin
+					regwrite = 0;
+					destreg = 5'bx;
+					alusrcbimm = 1;
+					dobranch = zero;
+					memwrite = 0;
+					memtoreg = 0;
+					dojump = 0;
+					alucontrol = 3'b111; // Comparison
 				end
 			default: // Default case
 				begin
