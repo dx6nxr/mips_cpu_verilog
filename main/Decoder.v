@@ -27,12 +27,12 @@ module Decoder(
 					memtoreg = 0;
 					dojump = 0;
 					case (funct)
-						6'b100001: alucontrol = 3'b010; // TODO // addition unsigned
-						6'b100011: alucontrol = 3'b110;// TODO // subtraction unsigned
-						6'b100100: alucontrol = 3'b000;// TODO // and
-						6'b100101: alucontrol = 3'b001;// TODO // or
-						6'b101011: alucontrol = 3'b111;// TODO // set-less-than unsigned
-						default:   alucontrol = 3'b100;// TODO // undefined
+						6'b100001: alucontrol = 3'b010; // addition unsigned
+						6'b100011: alucontrol = 3'b110; // subtraction unsigned
+						6'b100100: alucontrol = 3'b000; // and
+						6'b100101: alucontrol = 3'b001; // or
+						6'b101011: alucontrol = 3'b111; // set-less-than unsigned
+						default:   alucontrol = 3'b100; // undefined
 					endcase
 				end
 			6'b100011, // Load data word from memory
@@ -45,7 +45,7 @@ module Decoder(
 					memwrite = op[3];
 					memtoreg = 1;
 					dojump = 0;
-					alucontrol = // TODO // Effective address: Base register + offset
+					alucontrol = 3'b010;// TODO // Effective address: Base register + offset  example: 4($a0)
 				end
 			6'b000100: // Branch Equal
 				begin
@@ -56,7 +56,7 @@ module Decoder(
 					memwrite = 0;
 					memtoreg = 0;
 					dojump = 0;
-					alucontrol = // TODO // Subtraction
+					alucontrol = 3'b110; // Subtraction
 				end
 			6'b001001: // Addition immediate unsigned
 				begin
@@ -67,7 +67,7 @@ module Decoder(
 					memwrite = 0;
 					memtoreg = 0;
 					dojump = 0;
-					alucontrol = // TODO // Addition
+					alucontrol = 3'b010; // Addition
 				end
 			6'b000010: // Jump immediate
 				begin
@@ -78,6 +78,30 @@ module Decoder(
 					memwrite = 0;
 					memtoreg = 0;
 					dojump = 1;
+					alucontrol = // TODO
+				end
+				//ori 001101
+			6'b001101:
+				begin
+					regwrite = 1;
+					destreg = instr[20:16];
+					alusrcbimm = 0;
+					dobranch = 0;
+					memwrite = 0;
+					memtoreg = 0;
+					dojump = 0;
+					alucontrol = // TODO
+				end
+				//lui 001111
+			6'b001111:
+				begin
+					regwrite = 1;
+					destreg = instr[20:16];
+					alusrcbimm = 0;
+					dobranch = 0;
+					memwrite = 0;
+					memtoreg = 0;
+					dojump = 0;
 					alucontrol = // TODO
 				end
 			default: // Default case
