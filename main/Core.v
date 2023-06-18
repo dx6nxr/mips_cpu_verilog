@@ -12,7 +12,7 @@ module MIPScore(
 	wire       memtoreg, alusrcbimm, dojump, dobranch, zero;
 	wire [1:0] regwrite;
 	wire [4:0] destreg;
-	wire [3:0] alucontrol;
+	wire [2:0] alucontrol;
 
 	Decoder decoder(instr, zero, memtoreg, memwrite,
 					dobranch, alusrcbimm, destreg,

@@ -6,7 +6,7 @@ module Datapath(
 	input  [4:0]  destreg,
 	input  [1:0]  regwrite,
 	input         jump,
-	input  [3:0]  alucontrol,
+	input  [2:0]  alucontrol,
 	output        zero,
 	output [31:0] pc,
 	input  [31:0] instr,
@@ -49,6 +49,10 @@ module ProgramCounter(
 	output [31:0] progcounter
 );
 	reg  [31:0] pc;
+
+	// create another register for jal function
+		//TODO
+
 	wire [31:0] incpc, branchpc, nextpc;
 
 	// Increment program counter by 4 (word aligned)
@@ -56,6 +60,10 @@ module ProgramCounter(
 	// Calculate possible (PC-relative) branch target
 	Adder pcbranch(.a(incpc), .b({branchoffset[29:0], 2'b00}), .cin(1'b0), .y(branchpc));
 	// Select the next value of the program counter
+
+	//add dojal and dojr support
+	// TODO
+
 	assign nextpc = dojump   ? {incpc[31:28], jumptarget, 2'b00} :
 					dobranch ? branchpc :
 							   incpc;
@@ -83,6 +91,9 @@ module RegisterFile(
 	input  [31:0] wd3, // result
 	output [31:0] rd1, rd2 //srca, srcb
 );
+
+	// Possibly mfhilo register can be added here
+	reg [63:0] hilo;
 	reg [31:0] pcreg;
 	reg [31:0] registers[31:0];
 	always @(*)
@@ -118,26 +129,25 @@ endmodule
 
 module ArithmeticLogicUnit(
 	input  [31:0] a, b,
-	input  [3:0]  alucontrol,
+	input  [2:0]  alucontrol,
 	output [31:0] result,
 	output        zero
 );
 	reg [31:0] RES;
-	reg [63:0] hilo;
 
 	assign zero = (RES == 0);
 	assign result = RES;
 	always @(*)
 	case (alucontrol)
-		4'b0000: RES = a & b;
-		4'b0001: RES = a | b;
-		4'b0010: RES = a + b;
-		4'b0110: RES = a - b;
-		4'b1000: RES = {b, 16'b0}; // lui
-		4'b1110: RES = a < b ? 1 : 0;
-		4'b1100: RES = hilo[63:32]; //mfhi
-		4'b1010: RES = hilo[31:0]; //mflo
-		4'b0111: hilo = a * b; // mulu
+		3'b000: RES = a & b;
+		3'b001: RES = a | b;
+		3'b010: RES = a + b;
+		3'b110: RES = a - b;
+		3'b100: RES = {b, 16'b0}; // lui
+		3'b111: RES = a < b ? 1 : 0; // slt
+		//4'b1100: RES = hilo[63:32]; //mfhi
+		//4'b1010: RES = hilo[31:0]; //mflo
+		//3'b0111: hilo = a * b; // mulu
 		default: RES = 0;
 	endcase
 endmodule

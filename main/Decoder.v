@@ -8,7 +8,7 @@ module Decoder(
 	output reg [4:0] destreg,    // Number of the target register to (possibly) be written
 	output reg [1:0] regwrite,   // Write to the target register
 	output reg       dojump,     // Perform an absolute jump
-	output reg [3:0] alucontrol  // ALU control bits
+	output reg [2:0] alucontrol  // ALU control bits
 );
 	// Extract the primary and secondary opcode
 	wire [5:0] op = instr[31:26];
@@ -19,17 +19,6 @@ module Decoder(
 		case (op)
 			6'b000000: // R-type instruction
 				begin
-					if (funct == 6'b001000) begin // jr
-						regwrite = 0;
-						destreg = 5'b11111;
-						alusrcbimm = 0;
-						dobranch = 0;
-						memwrite = 0;
-						memtoreg = 0;
-						dojump = 1;
-						alucontrol = 4'bxxxx; //default (undefined) behavior of ALU
-					end
-					else begin
 						regwrite = 1;
 						destreg = instr[15:11];
 						alusrcbimm = 0;
@@ -38,17 +27,16 @@ module Decoder(
 						memtoreg = 0;
 						dojump = 0;
 						case (funct)
-							6'b100001: alucontrol = 4'b0010; // addition unsigned
-							6'b100011: alucontrol = 4'b0110; // subtraction unsigned
-							6'b100100: alucontrol = 4'b0000; // and
-							6'b100101: alucontrol = 4'b0001; // or
-							6'b101011: alucontrol = 4'b1110; // set-less-than unsigned
-							6'b010000: alucontrol = 4'b1100; // mfhi
-							6'b010010: alucontrol = 4'b1010; // mflo
-							6'b011001: alucontrol = 4'b0111; // mult
-							default:   alucontrol = 4'b1111; // undefined
+							6'b100001: alucontrol = 3'b010; // addition unsigned
+							6'b100011: alucontrol = 3'b110; // subtraction unsigned
+							6'b100100: alucontrol = 3'b000; // and
+							6'b100101: alucontrol = 3'b001; // or
+							6'b101011: alucontrol = 3'b111; // set-less-than unsigned
+							//6'b010000: alucontrol = 3'b1100; // mfhi
+							//6'b010010: alucontrol = 3'b1010; // mflo
+							//6'b011001: alucontrol = 4'b0111; // mult
+							default:   alucontrol = 3'bxxx; // undefined
 						endcase
-					end
 				end
 			6'b100011, // Load data word from memory
 			6'b101011: // Store data word
@@ -60,7 +48,7 @@ module Decoder(
 					memwrite = op[3];
 					memtoreg = 1;
 					dojump = 0;
-					alucontrol = 4'b0010;// TODO // Effective address: Base register + offset  example: 4($a0)
+					alucontrol = 3'b010;// TODO // Effective address: Base register + offset  example: 4($a0)
 				end
 			6'b000100: // Branch Equal
 				begin
@@ -71,7 +59,7 @@ module Decoder(
 					memwrite = 0;
 					memtoreg = 0;
 					dojump = 0;
-					alucontrol = 4'b0110; // Subtraction
+					alucontrol = 3'b110; // Subtraction
 				end
 			6'b001001: // Addition immediate unsigned
 				begin
@@ -82,7 +70,7 @@ module Decoder(
 					memwrite = 0;
 					memtoreg = 0;
 					dojump = 0;
-					alucontrol = 4'b0010; // Addition
+					alucontrol = 3'b010; // Addition
 				end
 			6'b000010: // Jump immediate
 				begin
@@ -93,7 +81,7 @@ module Decoder(
 					memwrite = 0;
 					memtoreg = 0;
 					dojump = 1;
-					alucontrol = 4'b1111; //default (undefined) behavior of ALU
+					alucontrol = 3'bxxx; //default (undefined) behavior of ALU
 				end
 			6'b001101: //ori 001101
 				begin
@@ -104,7 +92,7 @@ module Decoder(
 					memwrite = 0;
 					memtoreg = 0;
 					dojump = 0;
-					alucontrol = 4'b0001;
+					alucontrol = 3'b001;
 				end
 			6'b001111: //lui 001111
 				begin
@@ -115,7 +103,7 @@ module Decoder(
 					memwrite = 0;
 					memtoreg = 0;
 					dojump = 0;
-					alucontrol = 4'b1000;
+					alucontrol = 3'b100;
 				end
 				//implement the bltz instruction with the opcode 000001
 			6'b000001: //bltz 000001
@@ -127,7 +115,7 @@ module Decoder(
 					memwrite = 0;
 					memtoreg = 0;
 					dojump = 0;
-					alucontrol = 4'b1110; // Comparison
+					alucontrol = 3'b111; // Comparison
 				end
 			6'b000011: //jal 000011
 				begin
@@ -138,7 +126,7 @@ module Decoder(
 					memwrite = 0;
 					memtoreg = 0;
 					dojump = 1;
-					alucontrol = 4'bx; // Default
+					alucontrol = 3'bx; // Default
 				end
 			default: // Default case
 				begin
@@ -149,7 +137,7 @@ module Decoder(
 					memwrite = 1'bx;
 					memtoreg = 1'bx;
 					dojump = 1'bx;
-					alucontrol = 4'bx; //default (undefined) behavior of ALU
+					alucontrol = 3'bx; //default (undefined) behavior of ALU
 				end
 		endcase
 	end
