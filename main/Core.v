@@ -9,16 +9,16 @@ module MIPScore(
 	output [31:0] aluout, writedata,
 	input  [31:0] readdata
 );
-	wire       memtoreg, alusrcbimm, shift16left, dojump, dobranch, zero;
+	wire       memtoreg, alusrcbimm, shift16left, slt, dojump, dobranch, zero;
 	wire       regwrite;
 	wire [4:0] destreg;
 	wire [2:0] alucontrol;
 
 	Decoder decoder(instr, zero, memtoreg, memwrite,
-					dobranch, alusrcbimm, shift16left, destreg,
+					dobranch, alusrcbimm, slt, shift16left, destreg,
 					regwrite, dojal, dojr, dojump, alucontrol);
 	Datapath dp(clk, reset, memtoreg, dobranch,
-				alusrcbimm, shift16left, destreg, regwrite, dojal, dojr, dojump,
+				alusrcbimm, slt, shift16left, destreg, regwrite, dojal, dojr, dojump,
 				alucontrol,
 				zero, pc, instr,
 				aluout, writedata, readdata);

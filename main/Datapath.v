@@ -3,6 +3,7 @@ module Datapath(
 	input         memtoreg,
 	input         dobranch,
 	input         alusrcbimm,
+	input 	      slt,
 	input 	      shift16left,
 	input  [4:0]  destreg,
 	input         regwrite,
@@ -33,8 +34,9 @@ module Datapath(
 	shift16left ? {instr[15:0], 16'b0} : srcb;
 	// (b) Perform computation in the ALU
 	ArithmeticLogicUnit alu(srca, srcbimm, alucontrol, aluout, zero, hilo, hiloinp);
+	Slt sltt(srca, srcbimm, zero);
 	// (c) Select the correct result
-	assign result = memtoreg ? readdata : aluout;
+	assign result = slt ? zero : memtoreg ? readdata : aluout;
 
 	// Memory: Data word that is transferred to the data memory for (possible) storage
 	assign writedata = srcb;
@@ -150,16 +152,24 @@ module ArithmeticLogicUnit(
 
 	assign zero = (RES == 0);
 	assign result = RES;
-	always @(*)
-	case (alucontrol)
-		3'b000: RES = a & b;
-		3'b001: RES = a | b;
-		3'b010: RES = a + b;
-		3'b110: RES = a - b;
-		3'b111: RES = a < b ? 1 : 0; // slt
-		3'b100: RES = hilo[63:32]; //mfhi
-		3'b101: RES = hilo[31:0]; //mflo
-		3'b011: hiloout = a * b; // mulu
-		default: RES = 0;
-	endcase
+	always @(*) begin
+		case (alucontrol)
+			3'b000: RES = a & b;
+			3'b001: RES = a | b;
+			3'b010: RES = a + b;
+			3'b110: RES = a - b;
+			3'b100: RES = hilo[63:32]; //mfhi
+			3'b101: RES = hilo[31:0]; //mflo
+			3'b011: hiloout = a * b; // mulu
+			3'b111: hiloout = {(a % b),(a / b)}; // divu
+			default: RES = 0;
+		endcase
+	end
+endmodule
+
+module Slt(
+	input  [31:0] a, b,
+	output        zero
+);
+	assign zero = (a < b) ? 0 : 1;
 endmodule
