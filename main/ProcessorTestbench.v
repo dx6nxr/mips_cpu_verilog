@@ -22,11 +22,11 @@ module ProcessorTestbench();
 			end
 
 			// Read program to be executed
-//			$readmemh("TestPrograms/Fibonacci.dat", proc.imem.INSTRROM, 0, 5);
-//			$readmemh("TestPrograms/Fibonacci.expected", expectedRegContent);
-			$readmemh("main/TestPrograms/FunctionCall.dat", proc.imem.INSTRROM, 0, 4);
-			$readmemh("main/TestPrograms/FunctionCall.expected", expectedRegContent);
-//			$readmemh("main/TestPrograms/Constants.dat", proc.imem.INSTRROM, 0, 2);
+			$readmemh("main/TestPrograms/Fibonacci.dat", proc.imem.INSTRROM, 0, 5);
+			$readmemh("main/TestPrograms/Fibonacci.expected", expectedRegContent);
+//			$readmemh("main/TestPrograms/FunctionCall.dat", proc.imem.INSTRROM, 0, 4);
+//			$readmemh("main/TestPrograms/FunctionCall.expected", expectedRegContent);
+//			$readmemh("main/TestPrograms/Constants.dat", proc.imem.INSTRROM, 0, 1);
 //			$readmemh("main/TestPrograms/Constants.expected", expectedRegContent);
 //			$readmemh("TestPrograms/Multiplication.dat", proc.imem.INSTRROM, 0, 4);
 //			$readmemh("TestPrograms/Multiplication.expected", expectedRegContent);
@@ -34,6 +34,8 @@ module ProcessorTestbench();
 //			$readmemh("main/TestPrograms/BranchTest.expected", expectedRegContent);
 //			$readmemh("main/TestPrograms/Mult.dat", proc.imem.INSTRROM, 0, 4);
 //			$readmemh("main/TestPrograms/Mult.expected", expectedRegContent);
+//			$readmemh("main/TestPrograms/branchttest.dat", proc.imem.INSTRROM, 0, 12);
+//			$readmemh("main/TestPrograms/branchttest.expected", expectedRegContent);
 
 			// Generate reset input
 			reset <= 1;
@@ -43,6 +45,7 @@ module ProcessorTestbench();
 //			#20; // FunctionCall
 //			#16; // Constants
 //			#24; // Multiplication
+//			#400;
 
 			for(i=1; i<32; i=i+1) begin
 				$display("Register %d = %h", i, proc.mips.dp.gpr.registers[i]);

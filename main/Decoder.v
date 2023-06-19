@@ -5,8 +5,11 @@ module Decoder(
 	output reg       memwrite,   // Write to the data memory
 	output reg       dobranch,   // Perform a relative jump
 	output reg       alusrcbimm, // Use the immediate value as second operand
+	output reg       shift16left, // shift the immediate value 16 bits to the left
 	output reg [4:0] destreg,    // Number of the target register to (possibly) be written
-	output reg [1:0] regwrite,   // Write to the target register
+	output reg       regwrite,   // Write to the target register
+	output reg       dojal,   	 // save the return address in $ra
+	output reg       dojr,   	 // jump to the return address in $ra
 	output reg       dojump,     // Perform an absolute jump
 	output reg [2:0] alucontrol  // ALU control bits
 );
@@ -18,10 +21,28 @@ module Decoder(
 	begin
 		case (op)
 			6'b000000: // R-type instruction
+				if (funct == 6'b001000) // jr
+				begin
+					regwrite = 0;
+					dojal = 0;
+					dojr = 1;
+					destreg = 5'bx;
+					alusrcbimm = 0;
+					shift16left = 0;
+					dobranch = 0;
+					memwrite = 0;
+					memtoreg = 0;
+					dojump = 0;
+					alucontrol = 3'bxxx; //default (undefined) behavior of ALU
+				end
+				else 
 				begin
 						regwrite = 1;
+						dojal = 0;
+						dojr = 0;
 						destreg = instr[15:11];
 						alusrcbimm = 0;
+						shift16left = 0;
 						dobranch = 0;
 						memwrite = 0;
 						memtoreg = 0;
@@ -32,9 +53,9 @@ module Decoder(
 							6'b100100: alucontrol = 3'b000; // and
 							6'b100101: alucontrol = 3'b001; // or
 							6'b101011: alucontrol = 3'b111; // set-less-than unsigned
-							//6'b010000: alucontrol = 3'b1100; // mfhi
-							//6'b010010: alucontrol = 3'b1010; // mflo
-							//6'b011001: alucontrol = 4'b0111; // mult
+							6'b010000: alucontrol = 3'b100; // mfhi
+							6'b010010: alucontrol = 3'b101; // mflo
+							6'b011001: alucontrol = 4'b011; // mulu
 							default:   alucontrol = 3'bxxx; // undefined
 						endcase
 				end
@@ -42,8 +63,11 @@ module Decoder(
 			6'b101011: // Store data word
 				begin
 					regwrite = ~op[3];
+					dojal = 0;
+					dojr = 0;
 					destreg = instr[20:16];
 					alusrcbimm = 1;
+					shift16left = 0;
 					dobranch = 0;
 					memwrite = op[3];
 					memtoreg = 1;
@@ -53,8 +77,11 @@ module Decoder(
 			6'b000100: // Branch Equal
 				begin
 					regwrite = 0;
+					dojal = 0;
+					dojr = 0;
 					destreg = 5'bx;
 					alusrcbimm = 0;
+					shift16left = 0;
 					dobranch = zero; // Equality test
 					memwrite = 0;
 					memtoreg = 0;
@@ -64,8 +91,11 @@ module Decoder(
 			6'b001001: // Addition immediate unsigned
 				begin
 					regwrite = 1;
+					dojal = 0;
+					dojr = 0;
 					destreg = instr[20:16];
 					alusrcbimm = 1;
+					shift16left = 0;
 					dobranch = 0;
 					memwrite = 0;
 					memtoreg = 0;
@@ -75,8 +105,11 @@ module Decoder(
 			6'b000010: // Jump immediate
 				begin
 					regwrite = 0;
+					dojal = 0;
+					dojr = 0;
 					destreg = 5'bx;
 					alusrcbimm = 1;
+					shift16left = 0;
 					dobranch = 0;
 					memwrite = 0;
 					memtoreg = 0;
@@ -86,8 +119,11 @@ module Decoder(
 			6'b001101: //ori 001101
 				begin
 					regwrite = 1;
+					dojal = 0;
+					dojr = 0;
 					destreg = instr[20:16];
 					alusrcbimm = 1;
+					shift16left = 0;
 					dobranch = 0;
 					memwrite = 0;
 					memtoreg = 0;
@@ -97,20 +133,26 @@ module Decoder(
 			6'b001111: //lui 001111
 				begin
 					regwrite = 1;
+					dojal = 0;
+					dojr = 0;
 					destreg = instr[20:16];
-					alusrcbimm = 1;
+					alusrcbimm = 0;
+					shift16left = 1;
 					dobranch = 0;
 					memwrite = 0;
 					memtoreg = 0;
 					dojump = 0;
-					alucontrol = 3'b100;
+					alucontrol = 3'b010;
 				end
 				//implement the bltz instruction with the opcode 000001
 			6'b000001: //bltz 000001
 				begin
 					regwrite = 0;
+					dojal = 0;
+					dojr = 0;
 					destreg = 5'bx;
 					alusrcbimm = 1;
+					shift16left = 0;
 					dobranch = zero;
 					memwrite = 0;
 					memtoreg = 0;
@@ -119,9 +161,12 @@ module Decoder(
 				end
 			6'b000011: //jal 000011
 				begin
-					regwrite = 2'b10;
-					destreg = 5'b11111;
+					regwrite = 0;
+					dojal = 1;
+					dojr = 0;
+					destreg = 5'bxxxxx;
 					alusrcbimm = 1;
+					shift16left = 0;
 					dobranch = 0;
 					memwrite = 0;
 					memtoreg = 0;
@@ -130,9 +175,12 @@ module Decoder(
 				end
 			default: // Default case
 				begin
-					regwrite = 2'bx;
+					regwrite = 1'bx;
+					dojal = 1'bx;
+					dojr = 1'bx;
 					destreg = 5'bx;
 					alusrcbimm = 1'bx;
+					shift16left = 1'bx;
 					dobranch = 1'bx;
 					memwrite = 1'bx;
 					memtoreg = 1'bx;

@@ -30,10 +30,10 @@ module SanitizerMain();
 			$dumpvars(0, proc.mips);
 			$dumpvars(0, proc.mips.decoder);
 			$dumpvars(0, proc.mips.dp);
-			$dumpvars(0, proc.mips.dp.gpr);
-				for (idx = 0; idx < 32; idx = idx + 1) begin
-				$dumpvars(0, proc.mips.dp.gpr.registers[idx]);
-			end
+//			$dumpvars(0, proc.mips.dp.gpr);
+//				for (idx = 0; idx < 32; idx = idx + 1) begin
+//				$dumpvars(0, proc.mips.dp.gpr.registers[idx]);
+//			end
 				#1; $finish;
 		end
 

@@ -3,8 +3,11 @@ module Datapath(
 	input         memtoreg,
 	input         dobranch,
 	input         alusrcbimm,
+	input 	      shift16left,
 	input  [4:0]  destreg,
-	input  [1:0]  regwrite,
+	input         regwrite,
+	input 	      dojal,
+	inout         dojr,
 	input         jump,
 	input  [2:0]  alucontrol,
 	output        zero,
@@ -16,16 +19,17 @@ module Datapath(
 );
 	wire [31:0] pc;
 	wire [31:0] signimm;
-	wire [31:0] srca, srcb, srcbimm;
+	wire [31:0] srca, srcb, srcbimm, pcjal;
 	wire [31:0] result;
 
 	// Fetch: Pass PC to instruction memory and update PC
-	ProgramCounter pcenv(clk, reset, dobranch, signimm, jump, instr[25:0], pc);
+	ProgramCounter pcenv(clk, reset, dobranch, signimm, jump, instr[25:0], dojr, pcjal, pc);
 
 	// Execute:
 	// (a) Select operand
 	SignExtension se(instr[15:0], signimm);
-	assign srcbimm = alusrcbimm ? signimm : srcb;
+	assign srcbimm = alusrcbimm ? signimm :
+	shift16left ? {instr[15:0], 16'b0} : srcb;
 	// (b) Perform computation in the ALU
 	ArithmeticLogicUnit alu(srca, srcbimm, alucontrol, aluout, zero);
 	// (c) Select the correct result
@@ -35,8 +39,8 @@ module Datapath(
 	assign writedata = srcb;
 
 	// Write-Back: Provide operands and write back the result
-	RegisterFile gpr(pc, clk, regwrite, instr[25:21], instr[20:16],
-				   destreg, result, srca, srcb);
+	RegisterFile gpr(pc, clk, regwrite, dojal, instr[25:21], instr[20:16],
+				   destreg, result, srca, srcb, pcjal);
 endmodule
 
 module ProgramCounter(
@@ -46,12 +50,11 @@ module ProgramCounter(
 	input  [31:0] branchoffset,
 	input         dojump,
 	input  [25:0] jumptarget,
+	input         dojr, // 1 if yes, 0 if no
+	input  [31:0] pcjr,
 	output [31:0] progcounter
 );
 	reg  [31:0] pc;
-
-	// create another register for jal function
-		//TODO
 
 	wire [31:0] incpc, branchpc, nextpc;
 
@@ -64,9 +67,11 @@ module ProgramCounter(
 	//add dojal and dojr support
 	// TODO
 
-	assign nextpc = dojump   ? {incpc[31:28], jumptarget, 2'b00} :
+	assign nextpc = dojr ? pcjr :
+					dojump   ? {incpc[31:28], jumptarget, 2'b00} :
 					dobranch ? branchpc :
 							   incpc;
+							   //add dojal here
 
 	// The program counter memory element
 	always @(posedge clk)
@@ -86,29 +91,29 @@ endmodule
 module RegisterFile(
 	input [31:0]  pc,
 	input         clk,
-	input  [1:0]  we3, //regwrite
+	input         we3, //regwrite
+	input         dojal,
 	input  [4:0]  ra1, ra2, wa3, // isntr, instr, destreg
 	input  [31:0] wd3, // result
-	output [31:0] rd1, rd2 //srca, srcb
+	output [31:0] rd1, rd2, //srca, srcb
+	output [31:0] pcjal // outputs register 31
+//	output [63:0] hilo // outputs hilo
 );
-
-	// Possibly mfhilo register can be added here
-	reg [63:0] hilo;
-	reg [31:0] pcreg;
 	reg [31:0] registers[31:0];
-	always @(*)
-		pcreg = pc + 4;
+	//reg [63:0] hilo;
 	
 	always @(posedge clk)
 		if (we3 == 1) begin
 			registers[wa3] <= wd3;
 		end
-		else if(we3 == 2) begin
-			registers[wa3] <= pcreg;
+		else if (dojal == 1) begin
+			registers[31] <= pc + 4;
 		end
 
 	assign rd1 = (ra1 != 0) ? registers[ra1] : 0;
 	assign rd2 = (ra2 != 0) ? registers[ra2] : 0;
+	assign pcjal = registers[31];
+	//assign hilo = hilo;
 endmodule
 
 module Adder(
@@ -134,6 +139,7 @@ module ArithmeticLogicUnit(
 	output        zero
 );
 	reg [31:0] RES;
+	reg [63:0] hilo;
 
 	assign zero = (RES == 0);
 	assign result = RES;
@@ -143,11 +149,10 @@ module ArithmeticLogicUnit(
 		3'b001: RES = a | b;
 		3'b010: RES = a + b;
 		3'b110: RES = a - b;
-		3'b100: RES = {b, 16'b0}; // lui
 		3'b111: RES = a < b ? 1 : 0; // slt
-		//4'b1100: RES = hilo[63:32]; //mfhi
-		//4'b1010: RES = hilo[31:0]; //mflo
-		//3'b0111: hilo = a * b; // mulu
+		3'b100: RES = hilo[63:32]; //mfhi
+		3'b101: RES = hilo[31:0]; //mflo
+		3'b011: hilo = a * b; // mulu
 		default: RES = 0;
 	endcase
 endmodule
