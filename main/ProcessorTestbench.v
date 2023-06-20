@@ -28,14 +28,14 @@ module ProcessorTestbench();
 //			$readmemh("main/TestPrograms/FunctionCall.expected", expectedRegContent);
 //			$readmemh("main/TestPrograms/Constants.dat", proc.imem.INSTRROM, 0, 1);
 //			$readmemh("main/TestPrograms/Constants.expected", expectedRegContent);
-//			$readmemh("TestPrograms/Multiplication.dat", proc.imem.INSTRROM, 0, 4);
-//			$readmemh("TestPrograms/Multiplication.expected", expectedRegContent);
+//			$readmemh("main/TestPrograms/Multiplication.dat", proc.imem.INSTRROM, 0, 4);
+//			$readmemh("main/TestPrograms/Multiplication.expected", expectedRegContent);
 //			$readmemh("main/TestPrograms/BranchTest.dat", proc.imem.INSTRROM, 0, 6);
 //			$readmemh("main/TestPrograms/BranchTest.expected", expectedRegContent);
 //			$readmemh("main/TestPrograms/Mult.dat", proc.imem.INSTRROM, 0, 4);
 //			$readmemh("main/TestPrograms/Mult.expected", expectedRegContent);
-			$readmemh("main/TestPrograms/branchttest.dat", proc.imem.INSTRROM, 0, 12);
-			$readmemh("main/TestPrograms/branchttest.expected", expectedRegContent);
+			$readmemh("main/TestPrograms/testAll.dat", proc.imem.INSTRROM, 0, 12);
+			$readmemh("main/TestPrograms/testAll.expected", expectedRegContent);
 
 			// Generate reset input
 			reset <= 1;
