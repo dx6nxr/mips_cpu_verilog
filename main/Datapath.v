@@ -5,6 +5,7 @@ module Datapath(
 	input         alusrcbimm,
 	input 	      slt,
 	input 	      shift16left,
+	input 	      zeroextend,
 	input  [4:0]  destreg,
 	input         regwrite,
 	input 	      dojal,
@@ -20,7 +21,7 @@ module Datapath(
 );
 	wire [31:0] pc;
 	wire [31:0] signimm;
-	wire [31:0] srca, srcb, srcbimm, pcjal;
+	wire [31:0] srca, srcb, srcbimm, pcjal, sltres;
 	wire [31:0] result;
 	wire [63:0]	hilo, hiloinp;
 
@@ -31,12 +32,13 @@ module Datapath(
 	// (a) Select operand
 	SignExtension se(instr[15:0], signimm);
 	assign srcbimm = alusrcbimm ? signimm :
-	shift16left ? {instr[15:0], 16'b0} : srcb;
+	shift16left ? {instr[15:0], 16'b0} :
+	zeroextend ? {16'b0, instr[15:0]} : srcb;
 	// (b) Perform computation in the ALU
 	ArithmeticLogicUnit alu(srca, srcbimm, alucontrol, aluout, zero, hilo, hiloinp);
-	Slt sltt(srca, srcbimm, zero);
+	Slt sltt(srca, srcbimm, zero, sltres);
 	// (c) Select the correct result
-	assign result = slt ? zero : memtoreg ? readdata : aluout;
+	assign result = slt ? sltres : memtoreg ? readdata : aluout;
 
 	// Memory: Data word that is transferred to the data memory for (possible) storage
 	assign writedata = srcb;
@@ -169,7 +171,9 @@ endmodule
 
 module Slt(
 	input  [31:0] a, b,
-	output        zero
+	output        zero,
+	output [31:0] sltres
 );
 	assign zero = (a < b) ? 0 : 1;
+	assign sltres = {31'b0, (a < b)};
 endmodule

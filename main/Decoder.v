@@ -7,6 +7,7 @@ module Decoder(
 	output reg       alusrcbimm, // Use the immediate value as second operand
 	output reg       slt,		// Is the current instruction a set-less-than?
 	output reg       shift16left, // shift the immediate value 16 bits to the left
+	output reg       zeroextend, // shift the immediate value 16 bits to the right
 	output reg [4:0] destreg,    // Number of the target register to (possibly) be written
 	output reg       regwrite,   // Write to the target register
 	output reg       dojal,   	 // save the return address in $ra
@@ -24,13 +25,14 @@ module Decoder(
 			6'b000000: // R-type instruction
 			if (funct == 6'b101011) // sltu
 					begin
-						regwrite = 0;
+						regwrite = 1;
 						dojal = 0;
 						dojr = 0;
-						destreg = 5'bx;
+						destreg = instr[15:11];
 						alusrcbimm = 0;
 						slt = 1;
 						shift16left = 0;
+						zeroextend = 0;
 						dobranch = 0;
 						memwrite = 0;
 						memtoreg = 0;
@@ -47,6 +49,7 @@ module Decoder(
 					alusrcbimm = 0;
 					slt = 0;
 					shift16left = 0;
+					zeroextend = 0;
 					dobranch = 0;
 					memwrite = 0;
 					memtoreg = 0;
@@ -62,6 +65,7 @@ module Decoder(
 						alusrcbimm = 0;
 						slt = 0;
 						shift16left = 0;
+						zeroextend = 0;
 						dobranch = 0;
 						memwrite = 0;
 						memtoreg = 0;
@@ -88,6 +92,7 @@ module Decoder(
 					alusrcbimm = 1;
 					slt = 0;
 					shift16left = 0;
+					zeroextend = 0;
 					dobranch = 0;
 					memwrite = op[3];
 					memtoreg = 1;
@@ -103,6 +108,7 @@ module Decoder(
 					alusrcbimm = 0;
 					slt = 0;
 					shift16left = 0;
+					zeroextend = 0;
 					dobranch = zero; // Equality test
 					memwrite = 0;
 					memtoreg = 0;
@@ -118,6 +124,7 @@ module Decoder(
 					alusrcbimm = 1;
 					slt = 0;
 					shift16left = 0;
+					zeroextend = 0;
 					dobranch = 0;
 					memwrite = 0;
 					memtoreg = 0;
@@ -133,6 +140,7 @@ module Decoder(
 					alusrcbimm = 1;
 					slt = 0;
 					shift16left = 0;
+					zeroextend = 0;
 					dobranch = 0;
 					memwrite = 0;
 					memtoreg = 0;
@@ -145,9 +153,10 @@ module Decoder(
 					dojal = 0;
 					dojr = 0;
 					destreg = instr[20:16];
-					alusrcbimm = 1;
+					alusrcbimm = 0;
 					slt = 0;
 					shift16left = 0;
+					zeroextend = 1;
 					dobranch = 0;
 					memwrite = 0;
 					memtoreg = 0;
@@ -163,6 +172,7 @@ module Decoder(
 					alusrcbimm = 0;
 					slt = 0;
 					shift16left = 1;
+					zeroextend = 0;
 					dobranch = 0;
 					memwrite = 0;
 					memtoreg = 0;
@@ -179,6 +189,7 @@ module Decoder(
 					alusrcbimm = 0;
 					slt = 1;
 					shift16left = 0;
+					zeroextend = 0;
 					dobranch = !zero;
 					memwrite = 0;
 					memtoreg = 0;
@@ -194,6 +205,7 @@ module Decoder(
 					alusrcbimm = 1;
 					slt = 0;
 					shift16left = 0;
+					zeroextend = 0;
 					dobranch = 0;
 					memwrite = 0;
 					memtoreg = 0;
@@ -209,6 +221,7 @@ module Decoder(
 					alusrcbimm = 1'bx;
 					slt = 1'bx;
 					shift16left = 1'bx;
+					zeroextend = 1'bx;
 					dobranch = 1'bx;
 					memwrite = 1'bx;
 					memtoreg = 1'bx;

@@ -1,6 +1,6 @@
-lui $1, 0xffff
-ori $1, 0xff9c
-bltz $1, labl
+lui $1, 0x0000
+ori $1, 0xffff
+beq $1, $1, labl
 lui $2, 0x0000
 ori $2, 0x0001
 labl:

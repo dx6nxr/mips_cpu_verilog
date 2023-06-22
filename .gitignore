@@ -1,2 +1,12 @@
 divsim.vcd
 sim.vvp
+main/simres.vcd
+main/TestPrograms/BranchTest.asm
+main/TestPrograms/BranchTest.dat
+main/TestPrograms/sltu.asm
+main/TestPrograms/BranchTest.expected
+main/TestPrograms/sltu.dat
+main/TestPrograms/sltu.expected
+main/TestPrograms/BranchTest.expected
+main/TestPrograms/BranchTest.dat
+main/TestPrograms/BranchTest.asm
